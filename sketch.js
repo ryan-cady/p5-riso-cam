@@ -5,9 +5,22 @@ let capture, ink1, ink2, mirrorBuffer;
 let frozen = false, frozenFrame = null;
 let facingMode = null; // null = no constraint on initial load (matches webcam demo)
 
+function calcCanvasSize() {
+  // 3:4 portrait aspect ratio (standard iOS photo)
+  const aspect = 3 / 4;
+  if (windowWidth / windowHeight > aspect) {
+    // window is wider than 3:4 — fit to height
+    return { w: Math.floor(windowHeight * aspect), h: windowHeight };
+  } else {
+    // window is narrower — fit to width
+    return { w: windowWidth, h: Math.floor(windowWidth / aspect) };
+  }
+}
+
 function setup() {
   pixelDensity(1);
-  let cnv = createCanvas(windowWidth, windowHeight);
+  const { w, h } = calcCanvasSize();
+  let cnv = createCanvas(w, h);
   cnv.parent('canvas-container');
   frameRate(6);
   buildLayers();
@@ -28,22 +41,31 @@ function startCamera() {
     ? { video: { facingMode: { ideal: facingMode } }, audio: false }
     : VIDEO;
   capture = createCapture(constraints);
-  capture.size(width, height); // match canvas so processed frames fill without stretching
   capture.hide();
   mirrorBuffer = createGraphics(width, height);
 }
 
 function getFrame() {
+  const vw = capture.elt.videoWidth;
+  const vh = capture.elt.videoHeight;
+
+  // Cover-fit: scale video to fill canvas, cropping excess rather than stretching
+  const scale = Math.max(width / vw, height / vh);
+  const dw = vw * scale;
+  const dh = vh * scale;
+  const dx = (width - dw) / 2;
+  const dy = (height - dh) / 2;
+
+  mirrorBuffer.clear();
+  mirrorBuffer.push();
   if (facingMode === 'user') {
-    mirrorBuffer.clear();
-    mirrorBuffer.push();
     mirrorBuffer.translate(width, 0);
     mirrorBuffer.scale(-1, 1);
-    mirrorBuffer.image(capture, 0, 0);
-    mirrorBuffer.pop();
-    return mirrorBuffer.get();
   }
-  return capture.get();
+  mirrorBuffer.image(capture, dx, dy, dw, dh);
+  mirrorBuffer.pop();
+
+  return mirrorBuffer.get();
 }
 
 function draw() {
@@ -77,9 +99,9 @@ function draw() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  if (capture) capture.size(width, height);
-  mirrorBuffer = createGraphics(width, height);
+  const { w, h } = calcCanvasSize();
+  resizeCanvas(w, h);
+  mirrorBuffer = createGraphics(w, h);
 }
 
 // --- API exposed to the HTML UI ---
