@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Riso Camera</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
+  <script src="../lib/p5.riso.js"></script>
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    #canvas-container {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    #canvas-container canvas { display: block; }
+
+    /* ---- Controls overlay ---- */
+    #controls {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+
+    /* Top bar — retake / save (frozen only) */
+    #top-bar {
+      pointer-events: all;
+      display: none;
+      padding: 1rem 1.25rem;
+      padding-top: calc(1rem + env(safe-area-inset-top));
+      background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
+      justify-content: space-between;
+      align-items: center;
+    }
+    #top-bar.visible { display: flex; }
+
+    /* Bottom bar — flip / capture / settings */
+    #bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      pointer-events: all;
+      padding: 1.25rem 2rem;
+      padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Round icon buttons */
+    .icon-btn {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      transition: background 0.1s;
+    }
+    .icon-btn:active { background: rgba(255,255,255,0.28); }
+
+    /* Shutter button */
+    #capture-btn {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 5px rgba(255,255,255,0.25);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+    }
+    #capture-btn:active { transform: scale(0.93); }
+    #capture-btn.frozen {
+      background: #ff48b0;
+      box-shadow: 0 0 0 5px rgba(255,72,176,0.35);
+    }
+
+    /* Text buttons (top bar) */
+    .text-btn {
+      padding: 0.5rem 1.1rem;
+      border-radius: 20px;
+      background: rgba(0,0,0,0.45);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      color: #fff;
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+    }
+    .text-btn:active { background: rgba(255,255,255,0.2); }
+    #save-btn {
+      background: rgba(255,72,176,0.75);
+      border-color: rgba(255,72,176,0.8);
+    }
+
+    /* ---- Settings panel ---- */
+    #settings-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 10;
+    }
+    #settings-backdrop.visible { display: block; }
+
+    #settings-panel {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 11;
+      background: rgba(12,12,12,0.97);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px 18px 0 0;
+      padding: 0 1.25rem;
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+      max-height: 75vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #settings-panel.open { transform: translateY(0); }
+
+    .panel-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      margin: 0.8rem auto 1.25rem;
+    }
+
+    .s-section { margin-bottom: 1.25rem; }
+
+    .s-label {
+      font-family: monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.38);
+      margin-bottom: 0.55rem;
+    }
+    .s-label span { color: rgba(255,255,255,0.65); margin-left: 0.4em; }
+
+    /* Color swatches */
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+
+    .swatch {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.1s;
+    }
+    .swatch:active { transform: scale(0.88); }
+    .swatch.sel1 { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.45); }
+    .swatch.sel2 { border-color: #ff48b0; box-shadow: 0 0 0 2px rgba(255,72,176,0.45); }
+
+    /* Pill selectors */
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+
+    .pill {
+      padding: 0.38rem 0.85rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      transition: background 0.12s;
+    }
+    .pill:active { background: rgba(255,255,255,0.2); }
+    .pill.active {
+      background: rgba(255,72,176,0.28);
+      border-color: rgba(255,72,176,0.55);
+      color: #fff;
+    }
+
+    /* Sliders */
+    .slider-row {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .slider-row label {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.45);
+      min-width: 5.5em;
+    }
+    .slider-row input[type=range] {
+      flex: 1;
+      accent-color: #ff48b0;
+      height: 4px;
+    }
+    .slider-row .val {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.55);
+      min-width: 2em;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div id="controls">
+    <div id="top-bar">
+      <button class="text-btn" id="retake-btn">✕ Retake</button>
+      <button class="text-btn" id="save-btn">↓ Save</button>
+    </div>
+    <div id="bottom-bar">
+      <button class="icon-btn" id="flip-btn" title="Switch camera">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <path d="M7 10l-3 3 3 3"/>
+          <path d="M17 10l3 3-3 3"/>
+        </svg>
+      </button>
+      <button id="capture-btn"></button>
+      <button class="icon-btn" id="settings-btn" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <div id="settings-backdrop"></div>
+
+  <div id="settings-panel">
+    <div class="panel-handle"></div>
+
+    <div class="s-section">
+      <div class="s-label">Ink 1 <span id="ink1-name"></span></div>
+      <div class="swatch-row" id="ink1-swatches"></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Ink 2 <span id="ink2-name"></span></div>
+      <div class="swatch-row" id="ink2-swatches"></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Effect mode</div>
+      <div class="pill-row" id="mode-pills"></div>
+    </div>
+
+    <div class="s-section" id="dither-section">
+      <div class="s-label">Dither (ink 1)</div>
+      <div class="pill-row" id="dither-pills"></div>
+    </div>
+
+    <div class="s-section" id="halftone-section">
+      <div class="s-label">Halftone (ink 2)</div>
+      <div class="pill-row" id="halftone-pills"></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Parameters</div>
+      <div class="slider-row" id="threshold-row">
+        <label>Threshold</label>
+        <input type="range" id="threshold-slider" min="50" max="220" value="130">
+        <span class="val" id="threshold-val">130</span>
+      </div>
+      <div style="height:0.6rem"></div>
+      <div class="slider-row" id="frequency-row">
+        <label>Frequency</label>
+        <input type="range" id="frequency-slider" min="2" max="14" value="5">
+        <span class="val" id="frequency-val">5</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---- Shared config ----
+    window.cfg = {
+      color1:    'fluorescentpink',
+      color2:    'blue',
+      dither:    'atkinson',
+      halftone:  'circle',
+      mode:      'both',
+      threshold: 130,
+      frequency: 5,
+    };
+
+    const PALETTE = [
+      { name: 'fluorescentpink', label: 'F. Pink',    hex: '#ff48b0' },
+      { name: 'blue',            label: 'Blue',       hex: '#0078bf' },
+      { name: 'yellow',          label: 'Yellow',     hex: '#ffe800' },
+      { name: 'orange',          label: 'Orange',     hex: '#ff6c2f' },
+      { name: 'red',             label: 'Red',        hex: '#ff665e' },
+      { name: 'teal',            label: 'Teal',       hex: '#00838a' },
+      { name: 'purple',          label: 'Purple',     hex: '#765ba7' },
+      { name: 'green',           label: 'Green',      hex: '#00a95c' },
+      { name: 'cornflower',      label: 'Cornflower', hex: '#62a8e5' },
+      { name: 'sunflower',       label: 'Sunflower',  hex: '#ffb511' },
+      { name: 'aqua',            label: 'Aqua',       hex: '#5ec8e5' },
+      { name: 'bubblegum',       label: 'Bubblegum',  hex: '#f984ca' },
+      { name: 'orchid',          label: 'Orchid',     hex: '#aa60bf' },
+      { name: 'mint',            label: 'Mint',       hex: '#82d8d5' },
+      { name: 'black',           label: 'Black',      hex: '#1a1a1a' },
+    ];
+
+    // ---- Build swatches ----
+    function buildSwatches(containerId, colorKey, selClass) {
+      const container = document.getElementById(containerId);
+      PALETTE.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'swatch' + (window.cfg[colorKey] === c.name ? ' ' + selClass : '');
+        btn.style.background = c.hex;
+        btn.title = c.label;
+        btn.dataset.name = c.name;
+        btn.addEventListener('click', () => {
+          window.cfg[colorKey] = c.name;
+          document.getElementById(colorKey === 'color1' ? 'ink1-name' : 'ink2-name').textContent = c.label;
+          container.querySelectorAll('.swatch').forEach(s =>
+            s.classList.toggle(selClass, s.dataset.name === c.name));
+          window.rebuildLayers && window.rebuildLayers();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    buildSwatches('ink1-swatches', 'color1', 'sel1');
+    buildSwatches('ink2-swatches', 'color2', 'sel2');
+
+    // Set initial label text
+    document.getElementById('ink1-name').textContent =
+      PALETTE.find(p => p.name === window.cfg.color1)?.label || '';
+    document.getElementById('ink2-name').textContent =
+      PALETTE.find(p => p.name === window.cfg.color2)?.label || '';
+
+    // ---- Build pills ----
+    function buildPills(containerId, options, cfgKey, onChange) {
+      const container = document.getElementById(containerId);
+      options.forEach(o => {
+        const btn = document.createElement('button');
+        btn.className = 'pill' + (window.cfg[cfgKey] === o.value ? ' active' : '');
+        btn.textContent = o.label;
+        btn.addEventListener('click', () => {
+          window.cfg[cfgKey] = o.value;
+          container.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          onChange && onChange(o.value);
+          if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    buildPills('mode-pills', [
+      { label: 'Dither + Halftone', value: 'both'     },
+      { label: 'Dither only',       value: 'dither'   },
+      { label: 'Halftone only',     value: 'halftone' },
+    ], 'mode', updateEffectSections);
+
+    buildPills('dither-pills', [
+      { label: 'Atkinson',       value: 'atkinson'      },
+      { label: 'Bayer',          value: 'bayer'         },
+      { label: 'Floyd-Steinberg',value: 'floydsteinberg'},
+      { label: 'Threshold',      value: 'none'          },
+    ], 'dither');
+
+    buildPills('halftone-pills', [
+      { label: 'Circle', value: 'circle' },
+      { label: 'Line',   value: 'line'   },
+      { label: 'Square', value: 'square' },
+      { label: 'Cross',  value: 'cross'  },
+    ], 'halftone');
+
+    function updateEffectSections(mode) {
+      const m = mode || window.cfg.mode;
+      document.getElementById('dither-section').style.display  =
+        (m === 'both' || m === 'dither')   ? '' : 'none';
+      document.getElementById('halftone-section').style.display =
+        (m === 'both' || m === 'halftone') ? '' : 'none';
+    }
+    updateEffectSections();
+
+    // ---- Sliders ----
+    const thSlider = document.getElementById('threshold-slider');
+    const thVal    = document.getElementById('threshold-val');
+    thSlider.addEventListener('input', () => {
+      window.cfg.threshold = parseInt(thSlider.value);
+      thVal.textContent = thSlider.value;
+      if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
+    });
+
+    const frSlider = document.getElementById('frequency-slider');
+    const frVal    = document.getElementById('frequency-val');
+    frSlider.addEventListener('input', () => {
+      window.cfg.frequency = parseInt(frSlider.value);
+      frVal.textContent = frSlider.value;
+      if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
+    });
+
+    // ---- Settings panel open/close ----
+    const panel    = document.getElementById('settings-panel');
+    const backdrop = document.getElementById('settings-backdrop');
+
+    document.getElementById('settings-btn').addEventListener('click', () => {
+      panel.classList.add('open');
+      backdrop.classList.add('visible');
+    });
+    backdrop.addEventListener('click', () => {
+      panel.classList.remove('open');
+      backdrop.classList.remove('visible');
+    });
+
+    // ---- Camera controls ----
+    document.getElementById('capture-btn').addEventListener('click', () =>
+      window.captureFrame && window.captureFrame());
+    document.getElementById('retake-btn').addEventListener('click', () =>
+      window.retake && window.retake());
+    document.getElementById('save-btn').addEventListener('click', () =>
+      window.saveCapture && window.saveCapture());
+    document.getElementById('flip-btn').addEventListener('click', () =>
+      window.flipCamera && window.flipCamera());
+
+    // ---- UI state ----
+    window.setFrozenUI = function (isFrozen) {
+      document.getElementById('top-bar').classList.toggle('visible', isFrozen);
+      document.getElementById('capture-btn').classList.toggle('frozen', isFrozen);
+    };
+  </script>
+
+  <script src="sketch.js"></script>
+</body>
+</html>
