@@ -2,6 +2,8 @@
 
 A real-time risograph camera effect built with [p5.js](https://p5js.org/) and [p5.riso](https://antiboredom.github.io/p5.riso/). Point your webcam at anything and see it rendered as a two-color risograph print — live.
 
+https://riso.cam
+
 ## What it does
 
 The app processes your webcam feed through two simulated Riso ink layers, applying dithering and halftone effects to mimic the look of a risograph-printed photograph.
