@@ -27,14 +27,6 @@ The app processes your webcam feed through two simulated Riso ink layers, applyi
 
 Fluorescent Pink, Blue, Yellow, Orange, Red, Teal, Purple, Green, Cornflower, Sunflower, Aqua, Bubblegum, Orchid, Mint, Black
 
-## Usage
-
-This is a static single-page app with no build step. It requires the `p5.riso.js` library to be available at `../lib/p5.riso.js` relative to `index.html`.
-
-Clone the [p5.riso](https://github.com/antiboredom/p5.riso) library and place it at that path, or update the script tag in `index.html` to point to your local copy.
-
-Then open `index.html` in a browser (requires a local server for camera access — e.g. `npx serve .` or VS Code Live Server).
-
 ## Controls
 
 | Control | Action |
