@@ -3,7 +3,9 @@
 
 let capture, ink1, ink2, mirrorBuffer;
 let frozen = false, frozenFrame = null;
-let facingMode = null; // null = no constraint on initial load (matches webcam demo)
+// On touch devices (phones/tablets) start with the rear camera.
+// On desktop leave unconstrained so any webcam works.
+let facingMode = ('ontouchstart' in window) ? 'environment' : null;
 
 function calcCanvasSize() {
   // 3:4 portrait aspect ratio (standard iOS photo)

@@ -15,6 +15,8 @@
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: none;
       background: #000;
     }
 
@@ -68,6 +70,8 @@
       font-size: 1.25rem;
       flex-shrink: 0;
       transition: background 0.1s;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
     }
     .icon-btn:active { background: rgba(255,255,255,0.28); }
 
@@ -80,6 +84,8 @@
       cursor: pointer;
       flex-shrink: 0;
       transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
     }
     #capture-btn:active { transform: scale(0.93); }
     #capture-btn.frozen {
@@ -98,6 +104,8 @@
       font-family: monospace;
       font-size: 0.8rem;
       letter-spacing: 0.04em;
+      touch-action: manipulation;
+      -webkit-user-select: none; user-select: none;
     }
     .text-btn:active { background: rgba(255,255,255,0.2); }
     #save-btn {
@@ -124,6 +132,8 @@
       padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
       max-height: 75vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       transform: translateY(100%);
       transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -157,6 +167,7 @@
       cursor: pointer;
       flex-shrink: 0;
       transition: transform 0.1s;
+      touch-action: manipulation;
     }
     .swatch:active { transform: scale(0.88); }
     .swatch.sel1 { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.45); }
@@ -176,6 +187,7 @@
       font-size: 0.72rem;
       letter-spacing: 0.04em;
       transition: background 0.12s;
+      touch-action: manipulation;
     }
     .pill:active { background: rgba(255,255,255,0.2); }
     .pill.active {
@@ -417,8 +429,23 @@
       window.captureFrame && window.captureFrame());
     document.getElementById('retake-btn').addEventListener('click', () =>
       window.retake && window.retake());
-    document.getElementById('save-btn').addEventListener('click', () =>
-      window.saveCapture && window.saveCapture());
+    document.getElementById('save-btn').addEventListener('click', () => {
+      if (!window.saveCapture) return;
+      // Use Web Share API on iOS/mobile (download attribute is ignored by Safari)
+      const canvas = document.querySelector('#canvas-container canvas');
+      if (canvas && navigator.share) {
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], 'riso-capture.png', { type: 'image/png' });
+          try {
+            await navigator.share({ files: [file] });
+          } catch (e) {
+            if (e.name !== 'AbortError') window.saveCapture();
+          }
+        }, 'image/png');
+      } else {
+        window.saveCapture();
+      }
+    });
     document.getElementById('flip-btn').addEventListener('click', () =>
       window.flipCamera && window.flipCamera());
 
