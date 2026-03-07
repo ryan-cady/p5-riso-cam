@@ -3,6 +3,7 @@ const CACHE = 'riso-cam-v1';
 const LOCAL_ASSETS = [
   '/',
   '/index.html',
+  '/style.css',
   '/sketch.js',
   '/p5.riso.js',
   '/manifest.json',
