@@ -21,9 +21,11 @@ The app processes your webcam feed through two simulated Riso ink layers, applyi
 - Halftone shapes: Circle, Line, Square, Cross
 - Adjustable threshold and frequency parameters
 - Freeze frame — capture a still and tweak the settings before saving
-- Save the result as a PNGca
-- Front/rear camera flip (great on mobile)
+- Save the composited result as a PNG
+- Export separation layers — download black-on-white plates for each ink channel
+- Front/rear camera flip with automatic mirroring for the front camera
 - Mobile-friendly layout with safe area support
+- Installable as a PWA with offline support
 
 ## Ink palette
 
@@ -35,7 +37,8 @@ Fluorescent Pink, Blue, Yellow, Orange, Red, Teal, Purple, Green, Cornflower, Su
 |---|---|
 | Shutter button | Freeze frame |
 | Retake | Return to live camera |
-| Save | Download as PNG |
+| Layers | Export black-on-white separation plates for each ink |
+| Save | Download composited PNG (uses Share Sheet on mobile) |
 | Flip button | Switch front/rear camera |
 | ⚙ | Open settings panel |
 
