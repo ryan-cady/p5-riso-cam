@@ -21,7 +21,7 @@ The app processes your webcam feed through two simulated Riso ink layers, applyi
 - Halftone shapes: Circle, Line, Square, Cross
 - Adjustable threshold and frequency parameters
 - Freeze frame — capture a still and tweak the settings before saving
-- Save the result as a PNG
+- Save the result as a PNGca
 - Front/rear camera flip (great on mobile)
 - Mobile-friendly layout with safe area support
 

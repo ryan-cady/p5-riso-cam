@@ -10,20 +10,20 @@ window.cfg = {
 };
 
 const PALETTE = [
-  { name: 'fluorescentpink', label: 'F. Pink',    hex: '#ff48b0' },
-  { name: 'blue',            label: 'Blue',       hex: '#0078bf' },
-  { name: 'yellow',          label: 'Yellow',     hex: '#ffe800' },
-  { name: 'orange',          label: 'Orange',     hex: '#ff6c2f' },
-  { name: 'red',             label: 'Red',        hex: '#ff665e' },
-  { name: 'teal',            label: 'Teal',       hex: '#00838a' },
-  { name: 'purple',          label: 'Purple',     hex: '#765ba7' },
-  { name: 'green',           label: 'Green',      hex: '#00a95c' },
-  { name: 'cornflower',      label: 'Cornflower', hex: '#62a8e5' },
-  { name: 'sunflower',       label: 'Sunflower',  hex: '#ffb511' },
-  { name: 'aqua',            label: 'Aqua',       hex: '#5ec8e5' },
-  { name: 'bubblegum',       label: 'Bubblegum',  hex: '#f984ca' },
-  { name: 'orchid',          label: 'Orchid',     hex: '#aa60bf' },
-  { name: 'mint',            label: 'Mint',       hex: '#82d8d5' },
+  { name: 'red',             label: 'Red',        hex: '#ff665e' },  // ~3°
+  { name: 'orange',          label: 'Orange',     hex: '#ff6c2f' },  // ~18°
+  { name: 'sunflower',       label: 'Sunflower',  hex: '#ffb511' },  // ~41°
+  { name: 'yellow',          label: 'Yellow',     hex: '#ffe800' },  // ~55°
+  { name: 'green',           label: 'Green',      hex: '#00a95c' },  // ~153°
+  { name: 'mint',            label: 'Mint',       hex: '#82d8d5' },  // ~178°
+  { name: 'teal',            label: 'Teal',       hex: '#00838a' },  // ~183°
+  { name: 'aqua',            label: 'Aqua',       hex: '#5ec8e5' },  // ~193°
+  { name: 'blue',            label: 'Blue',       hex: '#0078bf' },  // ~202°
+  { name: 'cornflower',      label: 'Cornflower', hex: '#62a8e5' },  // ~208°
+  { name: 'purple',          label: 'Purple',     hex: '#765ba7' },  // ~261°
+  { name: 'orchid',          label: 'Orchid',     hex: '#aa60bf' },  // ~287°
+  { name: 'bubblegum',       label: 'Bubblegum',  hex: '#f984ca' },  // ~324°
+  { name: 'fluorescentpink', label: 'F. Pink',    hex: '#ff48b0' },  // ~326°
   { name: 'black',           label: 'Black',      hex: '#1a1a1a' },
 ];
 
