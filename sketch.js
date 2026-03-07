@@ -146,6 +146,49 @@ window.saveCapture = function () {
   saveCanvas('riso-capture', 'png');
 };
 
+window.exportLayers = function () {
+  const layerDefs = [
+    { channel: ink1, name: window.cfg.color1 + '-layer.png' },
+    { channel: ink2, name: window.cfg.color2 + '-layer.png' },
+  ];
+
+  // Build black-on-white separation plates from each ink's alpha channel.
+  // Full alpha = full ink coverage = black; transparent = white.
+  const plates = layerDefs.map(({ channel, name }) => {
+    const buf = createGraphics(width, height);
+    buf.background(255);
+    channel.loadPixels();
+    buf.loadPixels();
+    for (let i = 0; i < buf.pixels.length; i += 4) {
+      const v = 255 - channel.pixels[i + 3];
+      buf.pixels[i] = buf.pixels[i + 1] = buf.pixels[i + 2] = v;
+      buf.pixels[i + 3] = 255;
+    }
+    buf.updatePixels();
+    return { buf, name };
+  });
+
+  function cleanup() { plates.forEach(({ buf }) => buf.remove()); }
+
+  if (navigator.share) {
+    Promise.all(plates.map(({ buf, name }) =>
+      new Promise(resolve => {
+        buf.elt.toBlob(blob => resolve(new File([blob], name, { type: 'image/png' })), 'image/png');
+      })
+    )).then(async files => {
+      try {
+        await navigator.share({ files });
+      } catch (e) {
+        if (e.name !== 'AbortError') plates.forEach(({ buf, name }) => buf.save(name));
+      }
+      cleanup();
+    });
+  } else {
+    plates.forEach(({ buf, name }) => buf.save(name));
+    cleanup();
+  }
+};
+
 window.flipCamera = function () {
   facingMode = (!facingMode || facingMode === 'environment') ? 'user' : 'environment';
   // Resume live view when switching camera

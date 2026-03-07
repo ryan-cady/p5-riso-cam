@@ -21,7 +21,10 @@
   <div id="controls">
     <div id="top-bar">
       <button class="text-btn" id="retake-btn">✕ Retake</button>
-      <button class="text-btn" id="save-btn">↓ Save</button>
+      <div style="display:flex;gap:0.5rem">
+        <button class="text-btn" id="layers-btn">↓ Layers</button>
+        <button class="text-btn" id="save-btn">↓ Save</button>
+      </div>
     </div>
     <div id="bottom-bar">
       <button class="icon-btn" id="flip-btn" title="Switch camera">
@@ -240,6 +243,8 @@
         window.saveCapture();
       }
     });
+    document.getElementById('layers-btn').addEventListener('click', () =>
+      window.exportLayers && window.exportLayers());
     document.getElementById('flip-btn').addEventListener('click', () =>
       window.flipCamera && window.flipCamera());
 
