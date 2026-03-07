@@ -47,6 +47,19 @@ function startCamera() {
   mirrorBuffer = createGraphics(width, height);
 }
 
+// iOS PWA kills camera streams when the app is backgrounded or the stream sits
+// idle. Restart the camera whenever the page becomes visible again and the
+// stream has been lost, so the user isn't hit with a permissions dialog.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  const track = capture && capture.elt && capture.elt.srcObject &&
+                capture.elt.srcObject.getVideoTracks()[0];
+  if (!track || track.readyState === 'ended') {
+    startCamera();
+    if (!frozen) loop();
+  }
+});
+
 function getFrame() {
   const vw = capture.elt.videoWidth;
   const vh = capture.elt.videoHeight;
@@ -116,7 +129,8 @@ window.rebuildLayers = function () {
 window.captureFrame = function () {
   frozenFrame = getFrame();
   frozen = true;
-  noLoop();
+  // Do NOT call noLoop() — keeping the draw loop alive prevents iOS from
+  // killing the camera stream while the user is in the settings panel.
   redraw();
   window.setFrozenUI && window.setFrozenUI(true);
 };
