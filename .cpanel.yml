@@ -1,3 +1,4 @@
+---
 deployment:
   tasks:
     - export DEPLOYPATH=/data0/obsoleteasthetics.net/public_html/riso.cam
