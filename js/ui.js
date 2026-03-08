@@ -1,13 +1,21 @@
 // ---- Shared config ----
+const _savedCfg = (() => {
+  try { return JSON.parse(localStorage.getItem('riso-cfg') || '{}'); } catch { return {}; }
+})();
+
 window.cfg = {
-  color1:    'fluorescentpink',
-  color2:    'blue',
-  dither:    'atkinson',
-  halftone:  'circle',
-  mode:      'both',
-  threshold: 130,
-  frequency: 5,
+  color1:    _savedCfg.color1    ?? 'fluorescentpink',
+  color2:    _savedCfg.color2    ?? 'blue',
+  dither:    _savedCfg.dither    ?? 'atkinson',
+  halftone:  _savedCfg.halftone  ?? 'circle',
+  mode:      _savedCfg.mode      ?? 'both',
+  threshold: _savedCfg.threshold ?? 130,
+  frequency: _savedCfg.frequency ?? 5,
 };
+
+function saveCfg() {
+  try { localStorage.setItem('riso-cfg', JSON.stringify(window.cfg)); } catch {}
+}
 
 const PALETTE = [
   { name: 'red',             label: 'Red',        hex: '#ff665e' },  // ~3°
@@ -41,6 +49,7 @@ function buildSwatches(containerId, colorKey, selClass) {
       document.getElementById(colorKey === 'color1' ? 'ink1-name' : 'ink2-name').textContent = c.label;
       container.querySelectorAll('.swatch').forEach(s =>
         s.classList.toggle(selClass, s.dataset.name === c.name));
+      saveCfg();
       window.rebuildLayers && window.rebuildLayers();
     });
     container.appendChild(btn);
@@ -67,6 +76,7 @@ function buildPills(containerId, options, cfgKey, onChange) {
       window.cfg[cfgKey] = o.value;
       container.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
+      saveCfg();
       onChange && onChange(o.value);
       if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
     });
@@ -106,17 +116,23 @@ updateEffectSections();
 // ---- Sliders ----
 const thSlider = document.getElementById('threshold-slider');
 const thVal    = document.getElementById('threshold-val');
+thSlider.value   = window.cfg.threshold;
+thVal.textContent = window.cfg.threshold;
 thSlider.addEventListener('input', () => {
   window.cfg.threshold = parseInt(thSlider.value);
   thVal.textContent = thSlider.value;
+  saveCfg();
   if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
 });
 
 const frSlider = document.getElementById('frequency-slider');
 const frVal    = document.getElementById('frequency-val');
+frSlider.value    = window.cfg.frequency;
+frVal.textContent = window.cfg.frequency;
 frSlider.addEventListener('input', () => {
   window.cfg.frequency = parseInt(frSlider.value);
   frVal.textContent = frSlider.value;
+  saveCfg();
   if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
 });
 
