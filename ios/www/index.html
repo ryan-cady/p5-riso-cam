@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Riso Camera</title>
+  <meta name="theme-color" content="#000000">
+  <!-- p5.js is bundled locally — no CDN dependency -->
+  <script src="js/p5.js"></script>
+  <script src="js/p5.riso.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div id="controls">
+    <div id="top-bar">
+      <button class="text-btn" id="retake-btn">✕ Retake</button>
+      <div style="display:flex;gap:0.5rem">
+        <button class="text-btn" id="layers-btn">↓ Layers</button>
+        <button class="text-btn" id="save-btn">↓ Save</button>
+      </div>
+    </div>
+    <div id="bottom-bar">
+      <button class="icon-btn" id="flip-btn" title="Switch camera">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <path d="M7 10l-3 3 3 3"/>
+          <path d="M17 10l3 3-3 3"/>
+        </svg>
+      </button>
+      <button id="capture-btn"></button>
+      <button class="icon-btn" id="settings-btn" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <div id="settings-backdrop"></div>
+
+  <div id="settings-panel">
+    <div class="panel-handle"></div>
+
+    <div class="s-section">
+      <div class="s-label">Ink 1 <span id="ink1-name"></span></div>
+      <div class="swatch-row" id="ink1-swatches"></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Ink 2 <span id="ink2-name"></span></div>
+      <div class="swatch-row" id="ink2-swatches"></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Effect mode</div>
+      <div class="pill-row" id="mode-pills"></div>
+    </div>
+
+    <div class="s-section" id="dither-section">
+      <div class="s-label">Dither (ink 1)</div>
+      <div class="pill-row" id="dither-pills"></div>
+    </div>
+
+    <div class="s-section" id="halftone-section">
+      <div class="s-label">Halftone (ink 2)</div>
+      <div class="pill-row" id="halftone-pills"></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Parameters</div>
+      <div class="slider-row" id="threshold-row">
+        <label>Threshold</label>
+        <input type="range" id="threshold-slider" min="50" max="220" value="130">
+        <span class="val" id="threshold-val">130</span>
+      </div>
+      <div style="height:0.6rem"></div>
+      <div class="slider-row" id="frequency-row">
+        <label>Frequency</label>
+        <input type="range" id="frequency-slider" min="2" max="14" value="5">
+        <span class="val" id="frequency-val">5</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/ui.js"></script>
+  <script src="js/sketch.js"></script>
+  <!-- No service worker: not supported for file:// URLs in WKWebView -->
+</body>
+</html>
