@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="/icons/icon-180.png">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
   <script src="/js/p5.riso.js"></script>
+  <script src="/js/version.js"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -83,8 +84,14 @@
         <span class="val" id="frequency-val">5</span>
       </div>
     </div>
+
+    <div id="version-badge"></div>
   </div>
 
+  <script>
+    document.getElementById('version-badge').textContent =
+      'v' + (window.APP_VERSION || '—');
+  </script>
   <script src="/js/ui.js"></script>
 
   <script src="/js/sketch.js"></script>
