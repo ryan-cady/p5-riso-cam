@@ -80,7 +80,7 @@ function getFrame() {
   mirrorBuffer.image(capture, dx, dy, dw, dh);
   mirrorBuffer.pop();
 
-  return mirrorBuffer.get();
+  return mirrorBuffer; // return Graphics directly — avoid full pixel copy on every frame
 }
 
 function draw() {
@@ -127,7 +127,7 @@ window.rebuildLayers = function () {
 };
 
 window.captureFrame = function () {
-  frozenFrame = getFrame();
+  frozenFrame = getFrame().get(); // snapshot: only time we need a pixel copy
   frozen = true;
   // Do NOT call noLoop() — keeping the draw loop alive prevents iOS from
   // killing the camera stream while the user is in the settings panel.

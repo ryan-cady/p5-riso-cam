@@ -414,7 +414,10 @@ class Riso extends p5.Graphics {
   image(img, x, y, w, h) {
     const p = _getP5Instance();
     let alphaValue = p.alpha(this.drawingContext.fillStyle) / 255;
-    let newImage = p.createImage(img.width, img.height);
+    if (!this._imgCache || this._imgCache.width !== img.width || this._imgCache.height !== img.height) {
+      this._imgCache = p.createImage(img.width, img.height);
+    }
+    const newImage = this._imgCache;
     img.loadPixels();
     newImage.loadPixels();
     for (let i = 0; i < newImage.pixels.length; i += 4) {
@@ -638,6 +641,8 @@ function halftoneImage(img, shape, frequency, angle, intensity) {
   rotatedCanvas.pop();
 
   const result = rotatedCanvas.get(w / 2, h / 2, w, h);
+  rotatedCanvas.remove();
+  out.remove();
   if (intensity === false) {
     return result;
   } else {
