@@ -3,6 +3,9 @@
 
 let capture, ink1, ink2, mirrorBuffer;
 let frozen = false, frozenFrame = null;
+let zoomLevel = 1.0;
+const ZOOM_MIN = 1.0;
+const ZOOM_MAX = 4.0;
 // On touch devices (phones/tablets) start with the rear camera.
 // On desktop leave unconstrained so any webcam works.
 let facingMode = ('ontouchstart' in window) ? 'environment' : null;
@@ -27,6 +30,7 @@ function setup() {
   frameRate(6);
   buildLayers();
   startCamera();
+  setupPinchZoom(cnv.elt);
 }
 
 function buildLayers() {
@@ -64,8 +68,8 @@ function getFrame() {
   const vw = capture.elt.videoWidth;
   const vh = capture.elt.videoHeight;
 
-  // Cover-fit: scale video to fill canvas, cropping excess rather than stretching
-  const scale = Math.max(width / vw, height / vh);
+  // Cover-fit: scale video to fill canvas, then apply digital zoom
+  const scale = Math.max(width / vw, height / vh) * zoomLevel;
   const dw = vw * scale;
   const dh = vh * scale;
   const dx = (width - dw) / 2;
@@ -191,6 +195,7 @@ window.exportLayers = function () {
 
 window.flipCamera = function () {
   facingMode = (!facingMode || facingMode === 'environment') ? 'user' : 'environment';
+  zoomLevel = 1.0;
   // Resume live view when switching camera
   if (frozen) {
     frozen = false;
@@ -200,6 +205,39 @@ window.flipCamera = function () {
   startCamera();
   loop();
 };
+
+function setupPinchZoom(el) {
+  let pinchStartDist = null;
+  let pinchStartZoom = 1.0;
+
+  function touchDist(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      pinchStartDist = touchDist(e.touches);
+      pinchStartZoom = zoomLevel;
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  el.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && pinchStartDist !== null) {
+      const ratio = touchDist(e.touches) / pinchStartDist;
+      zoomLevel = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, pinchStartZoom * ratio));
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  el.addEventListener('touchend', (e) => {
+    if (pinchStartDist !== null && e.touches.length < 2) {
+      pinchStartDist = null;
+    }
+  });
+}
 
 window.isFrozen = function () { return frozen; };
 window.redrawFrozen = function () { if (frozen) redraw(); };

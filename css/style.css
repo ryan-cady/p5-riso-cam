@@ -211,6 +211,7 @@ html, body {
 /* Sliders */
 .slider-row {
   display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 0;
 }
 .slider-row label {
   font-family: monospace;
@@ -220,8 +221,59 @@ html, body {
 }
 .slider-row input[type=range] {
   flex: 1;
-  accent-color: #ff48b0;
-  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 32px;
+  border-radius: 16px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+.slider-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 33%, rgba(0,0,0,0.2) 2px, transparent 2px),
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.2) 2px, transparent 2px),
+    radial-gradient(circle at 50% 67%, rgba(0,0,0,0.2) 2px, transparent 2px),
+    #ff48b0;
+  /* border: 1px solid #000; */
+  box-sizing: border-box;
+  cursor: pointer;
+  margin-top: 0;
+  position: relative;
+  z-index: 1;
+}
+.slider-row input[type=range]::-moz-range-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 33%, rgba(0,0,0,0.05) 2px, transparent 2px),
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.05) 2px, transparent 2px),
+    radial-gradient(circle at 50% 67%, rgba(0,0,0,0.05) 2px, transparent 2px),
+    #ff48b0;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.slider-row input[type=range]::-webkit-slider-runnable-track {
+  height: 32px;
+  border-radius: 16px;
+  background: linear-gradient(to right, #ff48b0 calc(16px + var(--pct, 0) * (100% - 32px)), rgba(255,255,255,0.15) calc(16px + var(--pct, 0) * (100% - 32px)));
+}
+.slider-row input[type=range]::-moz-range-track {
+  height: 32px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.15);
+}
+.slider-row input[type=range]::-moz-range-progress {
+  height: 32px;
+  border-radius: 16px 0 0 16px;
+  background: #ff48b0;
 }
 .slider-row .val {
   font-family: monospace;

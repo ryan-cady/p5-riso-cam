@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Riso Camera</title>
   <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Riso Cam">
   <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icons/icon-180.png">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
   <script src="/js/p5.riso.js"></script>
   <script src="/js/version.js"></script>
@@ -77,7 +73,7 @@
         <input type="range" id="threshold-slider" min="50" max="220" value="130">
         <span class="val" id="threshold-val">130</span>
       </div>
-      <div style="height:0.6rem"></div>
+      <div style="height:0.5rem"></div>
       <div class="slider-row" id="frequency-row">
         <label>Frequency</label>
         <input type="range" id="frequency-slider" min="2" max="14" value="5">
@@ -95,13 +91,6 @@
   <script src="/js/ui.js"></script>
 
   <script src="/js/sketch.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err =>
-          console.warn('SW registration failed:', err));
-      });
-    }
-  </script>
+
 </body>
 </html>

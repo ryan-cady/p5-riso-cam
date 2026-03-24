@@ -114,13 +114,20 @@ function updateEffectSections(mode) {
 updateEffectSections();
 
 // ---- Sliders ----
+function updateSliderFill(slider) {
+  const pct = (slider.value - slider.min) / (slider.max - slider.min);
+  slider.style.setProperty('--pct', pct);
+}
+
 const thSlider = document.getElementById('threshold-slider');
 const thVal    = document.getElementById('threshold-val');
 thSlider.value   = window.cfg.threshold;
 thVal.textContent = window.cfg.threshold;
+updateSliderFill(thSlider);
 thSlider.addEventListener('input', () => {
   window.cfg.threshold = parseInt(thSlider.value);
   thVal.textContent = thSlider.value;
+  updateSliderFill(thSlider);
   saveCfg();
   if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
 });
@@ -129,9 +136,11 @@ const frSlider = document.getElementById('frequency-slider');
 const frVal    = document.getElementById('frequency-val');
 frSlider.value    = window.cfg.frequency;
 frVal.textContent = window.cfg.frequency;
+updateSliderFill(frSlider);
 frSlider.addEventListener('input', () => {
   window.cfg.frequency = parseInt(frSlider.value);
   frVal.textContent = frSlider.value;
+  updateSliderFill(frSlider);
   saveCfg();
   if (window.isFrozen && window.isFrozen()) window.redrawFrozen && window.redrawFrozen();
 });
